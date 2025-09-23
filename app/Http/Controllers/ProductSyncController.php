@@ -36,12 +36,27 @@ class ProductSyncController extends Controller
             $aliProducts = json_decode($response->getBody(), true)['products'] ?? [];
 
             foreach ($aliProducts as $product) {
+                $basePrice = $product['price'] ?? 0;
+                if ($basePrice < 5) {
+                    // Final price: (basePrice * 2) + 20
+                    $calculatedPrice = ($basePrice * 2) + 20;
+                } elseif ($basePrice > 10 && $basePrice <= 50) {
+                    // Final price: (basePrice * 2) * 1.10
+                    $calculatedPrice = ($basePrice * 2) * 1.10;
+                } elseif ($basePrice > 50) {
+                    // Final price: (basePrice * 2) * 1.30
+                    $calculatedPrice = ($basePrice * 2) * 1.30;
+                } else {
+                    // Final price: (basePrice * 2) * 1.10
+                    $calculatedPrice = ($basePrice * 2) * 1.10;
+                }
+
                 $shopifyProduct = [
                     'title' => $product['name'] ?? 'Unnamed Product',
                     'body_html' => $product['description'] ?? '',
                     'vendor' => 'AliExpress',
                     'product_type' => $product['category'] ?? 'General',
-                    'price' => ($product['price'] ?? 0) * 1.3, // 30% margin
+                    'price' => $calculatedPrice,
                     'stock' => $product['stock'] ?? 0,
                     'image' => $product['image_url'] ?? '',
                     'sku' => $product['sku'] ?? uniqid('ali_')
