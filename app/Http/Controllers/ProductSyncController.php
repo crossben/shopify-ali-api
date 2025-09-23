@@ -35,6 +35,8 @@ class ProductSyncController extends Controller
             ]);
             $aliProducts = json_decode($response->getBody(), true)['products'] ?? [];
 
+            $syncedProducts = [];
+
             foreach ($aliProducts as $product) {
                 $basePrice = $product['price'] ?? 0;
                 if ($basePrice < 5) {
@@ -65,7 +67,7 @@ class ProductSyncController extends Controller
                 // Check if product exists in Shopify
                 $existing = $this->getProductBySku($shopifyProduct['sku']);
                 if ($existing) {
-                    $this->updateProduct($existing['id'], [
+                    $updated = $this->updateProduct($existing['id'], [
                         'title' => $shopifyProduct['title'],
                         'variants' => [
                             [
@@ -75,12 +77,17 @@ class ProductSyncController extends Controller
                             ]
                         ]
                     ]);
+                    $syncedProducts[] = $updated ?: $shopifyProduct;
                 } else {
-                    $this->createProduct($shopifyProduct);
+                    $created = $this->createProduct($shopifyProduct);
+                    $syncedProducts[] = $created ?: $shopifyProduct;
                 }
             }
             Log::info('Product sync completed successfully');
-            return response()->json(['message' => 'Products synced successfully']);
+            return response()->json([
+                'message' => 'Products synced successfully',
+                'products' => $syncedProducts
+            ]);
         } catch (\Exception $e) {
             Log::error('Product sync failed: ' . $e->getMessage());
             return response()->json(['error' => 'Sync failed'], 500);
