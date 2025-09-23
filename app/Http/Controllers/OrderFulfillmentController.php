@@ -51,7 +51,7 @@ class OrderFulfillmentController extends Controller
 
             $order = $request->all();
             dispatch(new ProcessOrderJob($order, $this));
-            Http::post('https://your-n8n-domain.com/webhook/order-created', $order);
+            Http::post('https://n8n.debcouture.com/webhook-test/order-created', $order);
             return response()->json(['status' => 'received']);
         } catch (\Exception $e) {
             Log::error('Webhook handling failed: ' . $e->getMessage());

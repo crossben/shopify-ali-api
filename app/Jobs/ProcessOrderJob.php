@@ -36,11 +36,11 @@ class ProcessOrderJob implements ShouldQueue
                 $this->controller->updateOrderStatus($this->order['id'], 'fulfilled');
                 $tracking = $this->controller->getTrackingInfo($aliOrder['order_id']);
                 $this->controller->updateOrderStatus($this->order['id'], 'shipped');
-                Http::post('https://your-n8n-domain.com/webhook/notify-customer', [
+                Http::post('http://n8n.debcouture.com/webhook-test/notify-customer', [
                     'order_id' => $this->order['id'],
                     'tracking' => $tracking,
                     'customer' => $this->order['customer']
-                ]);
+                ]); 
             }
         } catch (\Exception $e) {
             Log::error('Order job failed: ' . $e->getMessage());
